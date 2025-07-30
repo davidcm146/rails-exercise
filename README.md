@@ -1,24 +1,14 @@
-# README
-
-This README would normally document whatever steps are necessary to get the
-application up and running.
-
-Things you may want to cover:
-
-* Ruby version
-
-* System dependencies
-
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+- Implement a Api only Rails App:
+    - User model (use rails migration to create table)
+    - User can update his/her profile with: full_name, avatar (use local active storage for upload file)
+    - User can register/login/log out (manual api): register/login by email, password, use rails active model validation for check email exited when registration.
+    - User can create/edit/delete a job:
+        - With statuses: draft, publish (use enum)
+        - A job have columns: status, created_by_id, title, published_date, share_link, salary_from, salary_to (salary in usd, use rails migration to create table)
+        - User can view list of jobs that had been created by user(himself/herself)
+        - User can edit/delete owned job
+        - User can share a link to public with share_link defined.
+- Notes:
+    - Use jwt gem for authentication (registration, login, logout)
+    - Use pundit gem for authorization
+    - The public job share_link skips authentication so everyone can access job details.
