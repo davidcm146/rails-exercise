@@ -99,6 +99,10 @@ GEM
     debug (1.11.0)
       irb (~> 1.10)
       reline (>= 0.3.8)
+    dotenv (2.8.1)
+    dotenv-rails (2.8.1)
+      dotenv (= 2.8.1)
+      railties (>= 3.2)
     drb (2.2.3)
     erb (5.0.2)
     erubi (1.13.1)
@@ -112,6 +116,7 @@ GEM
       rdoc (>= 4.0.0)
       reline (>= 0.4.2)
     jsonapi-renderer (0.2.2)
+    jwt (1.5.6)
     logger (1.7.0)
     loofah (2.24.1)
       crass (~> 1.0.2)
@@ -243,6 +248,8 @@ DEPENDENCIES
   bcrypt (~> 3.1.7)
   bootsnap
   debug
+  dotenv-rails (~> 2.1, >= 2.1.1)
+  jwt (~> 1.5, >= 1.5.4)
   pg (~> 1.1)
   puma (>= 5.0)
   pundit (~> 2.5)
