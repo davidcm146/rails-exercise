@@ -1,0 +1,19 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  title: MyString
+  status: 1
+  published_date: 2025-07-30 11:21:35
+  share_link: MyString
+  salary_from: 1
+  salary_to: 1
+  created_by: one
+
+two:
+  title: MyString
+  status: 1
+  published_date: 2025-07-30 11:21:35
+  share_link: MyString
+  salary_from: 1
+  salary_to: 1
+  created_by: two

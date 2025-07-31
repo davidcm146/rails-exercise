@@ -1,8 +1,15 @@
 Rails.application.routes.draw do
-  post 'auth/register'
-  post 'auth/login'
-  delete 'auth/logout'
-  patch 'profile/:id', to: 'user#update'
+  scope :auth, controller: :auth do
+    post 'register'
+    post 'login'
+    delete 'logout'
+  end
+  patch 'profile/:id', to: 'users#update'
+  resources :jobs do
+    collection do
+      get 'share/:share_link', to: 'jobs#public_view'
+    end
+  end
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

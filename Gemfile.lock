@@ -252,7 +252,7 @@ DEPENDENCIES
   jwt (~> 1.5, >= 1.5.4)
   pg (~> 1.1)
   puma (>= 5.0)
-  pundit (~> 2.5)
+  pundit
   rack-cors
   rails (~> 7.1.5, >= 7.1.5.1)
   tzinfo-data
