@@ -1,5 +1,5 @@
 class AuthController < ApplicationController
-  skip_before_action :authorize, only: %i[ register login ]
+  skip_before_action :authorize_request, only: %i[ register login ]
 
   def register
     @user = User.new(user_params)
