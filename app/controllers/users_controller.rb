@@ -1,10 +1,10 @@
+# frozen_string_literal: true
+
 class UsersController < ApplicationController
   def update
     user = User.find(@current_user.id)
     authorize user
-    if user_params[:avatar].present?
-      user.avatar.attach(user_params[:avatar])
-    end
+    attach_avatar(user)
     if user.update(full_name: user_params[:full_name])
       render json: { message: 'User updated successfully!', user: UserSerializer.new(user) }, status: :ok
     else
@@ -13,6 +13,12 @@ class UsersController < ApplicationController
   end
 
   private
+
+  def attach_avatar(user)
+    return if user_params[:avatar].blank?
+
+    user.avatar.attach(user_params[:avatar])
+  end
 
   def user_params
     params.permit(:full_name, :avatar)

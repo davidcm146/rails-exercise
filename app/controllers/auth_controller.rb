@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 class AuthController < ApplicationController
-  skip_before_action :authorize_request, only: %i[ register login ]
+  skip_before_action :authorize_request, only: %i[register login]
 
   def register
     @user = User.new(user_params)
