@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 class JobsController < ApplicationController
-  skip_before_action :authorize_request, only: %i[ public_view ]
+  skip_before_action :authorize_request, only: %i[public_view]
 
   def public_view
     job = Job.find_by(share_link: params[:share_link])
-    if job && job.published?
+    if job&.published?
       render json: job, each_serializer: JobSerializer, status: :ok
     else
       render json: { error: 'Not Found or Not Published' }, status: :not_found
@@ -18,7 +20,7 @@ class JobsController < ApplicationController
   def create
     job = @current_user.jobs.build(job_params)
     if job.save
-      render json: { message: "Job created successfully!", job: job }, status: :created
+      render json: { message: 'Job created successfully!', job: job }, status: :created
     else
       render json: { errors: job.errors.full_messages }, status: :unprocessable_entity
     end
@@ -27,21 +29,18 @@ class JobsController < ApplicationController
   def update
     job = Job.find(params[:id])
     authorize job
-    if job.update(job_params)
-      render json: { message: "Job updated successfully!", job: job }, status: :ok
-    else
-      render json: { errors: job.errors.full_messages }, status: :unprocessable_entity
-    end
+    job.update!(job_params)
+    render json: { job: job, message: 'Job updated successfully!' }, status: :ok
   end
 
   def destroy
     job = Job.find(params[:id])
     authorize job
     job.destroy!
-    render json: { message: "Job deleted!" }
+    render json: { message: 'Job deleted!' }
   end
 
-  private 
+  private
 
   def job_params
     params.permit(:title, :published_date, :created_by_id, :salary_from, :salary_to, :status, :share_link)

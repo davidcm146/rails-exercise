@@ -1,0 +1,31 @@
+plugins: rubocop-rails
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+Style/Documentation:
+  Enabled: false
+
+Metrics/MethodLength:
+  Max: 25
+  Exclude:
+    - 'db/migrate/**/*'
+
+Layout/IndentationWidth:
+  EnforcedStyle: normal
+  Width: 2
+
+Layout/EndOfLine:
+  EnforcedStyle: lf
+
+Layout/TrailingEmptyLines:
+  EnforcedStyle: final_newline
+  Max: 1
+
+Metrics/AbcSize:
+  Max: 25
+  Exclude:
+    - 'db/migrate/**/*'
+
+AllCops:
+  TargetRailsVersion: 7.1.5
