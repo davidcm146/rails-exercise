@@ -6,20 +6,24 @@ class JobPolicy < ApplicationPolicy
   end
 
   def update?
-    user.present? && user.id == record.created_by_id
+    owned?
   end
 
   def index?
-    update?
+    owned?
   end
 
   def destroy?
-    update?
+    owned?
   end
 
   class Scope < Scope
     def resolve
       scope.where(created_by: user)
+    end
+
+    def owned?
+      user.present? && user.id == record.created_by_id
     end
   end
 end

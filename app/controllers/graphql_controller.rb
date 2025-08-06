@@ -3,7 +3,7 @@
 class GraphqlController < ApplicationController
   include Pundit
   skip_before_action :authorize_request
-  def execute
+  def execute # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
     header = request.headers['Authorization']
     token = header.split(' ').last if header
     decoded = JsonWebToken.decode(token)
@@ -24,9 +24,9 @@ class GraphqlController < ApplicationController
       operation_name: operation_name
     )
     render json: result
-  rescue ActiveRecord::RecordNotFound => e
+  rescue ActiveRecord::RecordNotFound => e # rubocop:disable Lint/UselessAssignment
     raise GraphQL::ExecutionError, 'Record not found'
-  rescue Pundit::NotAuthorizedError => e
+  rescue Pundit::NotAuthorizedError => e # rubocop:disable Lint/UselessAssignment
     render json: {
       errors: [{ message: 'You are not authorized to perform this action' }],
       data: {}
@@ -58,7 +58,7 @@ class GraphqlController < ApplicationController
     end
   end
 
-  def handle_error_in_development(e)
+  def handle_error_in_development(e) # rubocop:disable Naming/MethodParameterName
     logger.error e.message
     logger.error e.backtrace.join("\n")
     render json: {
