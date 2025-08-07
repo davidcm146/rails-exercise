@@ -29,7 +29,7 @@ module Types
       'Hello World!'
     end
 
-    field :my_jobs, resolver: Resolvers::MyJobs
-    field :public_jobs, resolver: Resolvers::PublicJobs
+    field :my_jobs, resolver: Resolvers::JobResolver::MyJobs
+    field :public_jobs, resolver: Resolvers::JobResolver::PublicJobs
   end
 end
