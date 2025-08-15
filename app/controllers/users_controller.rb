@@ -8,7 +8,7 @@ class UsersController < ApplicationController
     if user.update(full_name: user_params[:full_name])
       render json: { message: 'User updated successfully!', user: UserSerializer.new(user) }, status: :ok
     else
-      render json: { errors: @user.errors.full_messages }, status: :unprocessable_entity
+      render json: { errors: user.errors.full_messages }, status: :unprocessable_entity
     end
   end
 

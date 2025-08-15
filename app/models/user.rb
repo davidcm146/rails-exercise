@@ -11,10 +11,6 @@ class User < ApplicationRecord
 
   private
 
-  def email_required?
-    new_record? || email.present?
-  end
-
   def password_required?
     new_record? || password.present?
   end
