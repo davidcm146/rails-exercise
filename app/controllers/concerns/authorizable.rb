@@ -1,5 +1,5 @@
 module Authorizable
-  include Pundit
+  include Pundit::Authorization
   def current_user
     context[:current_user]
   end

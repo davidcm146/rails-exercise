@@ -26,6 +26,10 @@ module RailsExercise
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
     config.eager_load_paths << Rails.root.join('lib')
+    config.factory_bot.definition_file_paths = ['spec/factories']
+    config.generators do |g|
+      g.factory_bot dir: 'spec/factories'
+    end
 
     # Configuration for the application, engines, and railties goes here.
     #

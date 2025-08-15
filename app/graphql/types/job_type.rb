@@ -4,7 +4,7 @@ module Types
   class JobType < Types::BaseObject
     field :id, ID, null: false
     field :title, String
-    field :status, Integer
+    field :status, String
     field :published_date, GraphQL::Types::ISO8601DateTime
     field :share_link, String
     field :salary_from, Integer

@@ -11,9 +11,16 @@ module Mutations
       field :job, Types::JobType, null: true
       field :errors, [String], null: false
 
-      def resolve(args)
+      def resolve(title:, status:, published_date: nil, salary_from: nil, salary_to: nil, share_link: nil) # rubocop:disable Metrics/ParameterLists
         authorize_user!
-        job = current_user.jobs.build(args)
+        job = current_user.jobs.build(
+          title: title,
+          published_date: published_date,
+          salary_from: salary_from,
+          salary_to: salary_to,
+          status: status,
+          share_link: share_link
+        )
         authorize job, :create?
         if job.save
           { job: job, errors: [] }

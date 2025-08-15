@@ -45,14 +45,21 @@ gem 'apollo_upload_server', '2.1'
 gem 'graphiql-rails', '~> 1.10'
 # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin Ajax possible
 gem 'rack-cors'
+gem 'rubocop-factory_bot', require: false
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem 'debug', platforms: %i[mri windows]
   gem 'dotenv-rails', '~> 2.1', '>= 2.1.1'
+  gem 'factory_bot_rails'
+  gem 'faker'
+  gem 'rspec-rails', '~> 7.1'
 end
 
-group :development do
-  # Speed up commands on slow machines / big apps [https://github.com/rails/spring]
-  # gem "spring"
+group :test do
+  gem 'pundit-matchers'
+  gem 'shoulda-matchers', '~> 6.0'
+  gem 'simplecov', require: false
+  gem 'vcr'
+  gem 'webmock'
 end
