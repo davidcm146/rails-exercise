@@ -23,6 +23,7 @@ RSpec.describe Mutations::ProfileMutation, type: :graphql do # rubocop:disable M
         to_io: File.open(Rails.root.join('spec/factories/files/shutup.jpg'))
       )
     end
+    let(:updated_name) { Faker::Name.name }
 
     context 'when user update profile successfully' do
       it 'returns updated user info' do
@@ -30,16 +31,15 @@ RSpec.describe Mutations::ProfileMutation, type: :graphql do # rubocop:disable M
           query,
           variables: {
             id: user.id,
-            fullName: 'New Name'
+            fullName: updated_name
             # avatar: avatar_file
           },
           context: { current_user: user }
         )
-        p result
         user_data = result.dig('data', 'updateProfile', 'user')
         expect(user_data['id']).to eq(user.id.to_s)
-        expect(user_data['fullName']).to eq('New Name')
-        expect(user.reload.full_name).to eq('New Name')
+        expect(user_data['fullName']).to eq(updated_name)
+        expect(user.reload.full_name).to eq(updated_name)
       end
     end
 
@@ -49,7 +49,7 @@ RSpec.describe Mutations::ProfileMutation, type: :graphql do # rubocop:disable M
           query,
           variables: {
             id: user.id,
-            fullName: 'New Name'
+            fullName: updated_name
           },
           context: {}
         )
@@ -68,7 +68,7 @@ RSpec.describe Mutations::ProfileMutation, type: :graphql do # rubocop:disable M
             query,
             variables: {
               id: other_user.id,
-              fullName: 'Hacker Name'
+              fullName: updated_name
             },
             context: { current_user: user }
           )

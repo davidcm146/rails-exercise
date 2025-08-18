@@ -42,7 +42,6 @@ RSpec.describe Mutations::AuthenticationMutation, type: :graphql do # rubocop:di
           },
           context: {}
         )
-        p result
         register_data = result.dig('data', 'register')
 
         if register_data.nil?
