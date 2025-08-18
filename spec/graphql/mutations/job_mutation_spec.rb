@@ -17,28 +17,35 @@ RSpec.describe Mutations::JobMutation, type: :graphql do # rubocop:disable Metri
             errors
           }
         }
-      GRAPHQL
+        GRAPHQL
     end
+
     let(:user) { create(:user) }
+    let(:title) { Faker::Job.title }
+    let(:status) { 'published' }
+    let(:salary_from) { Faker::Number.between(from: 1000, to: 3000) }
+    let(:salary_to) { Faker::Number.between(from: salary_from + 500, to: salary_from + 5000) }
+
     context 'when user logged in' do
       it 'returns created job' do
         result = RailsExerciseSchema.execute(
           query,
           variables: {
-            title: 'Senior Rust Developer',
-            status: 'published',
-            salaryFrom: 2000,
-            salaryTo: 4000
+            title: title,
+            status: status,
+            salaryFrom: salary_from,
+            salaryTo: salary_to
           },
           context: { current_user: user }
         )
+
         job_data = result.dig('data', 'createJob', 'job')
         errors_data = result.dig('data', 'createJob', 'errors')
 
-        expect(job_data['title']).to eq('Senior Rust Developer')
-        expect(job_data['status']).to eq('published')
-        expect(job_data['salaryFrom']).to eq(2000)
-        expect(job_data['salaryTo']).to eq(4000)
+        expect(job_data['title']).to eq(title)
+        expect(job_data['status']).to eq(status)
+        expect(job_data['salaryFrom']).to eq(salary_from)
+        expect(job_data['salaryTo']).to eq(salary_to)
         expect(errors_data).to be_empty
       end
     end
@@ -48,13 +55,14 @@ RSpec.describe Mutations::JobMutation, type: :graphql do # rubocop:disable Metri
         result = RailsExerciseSchema.execute(
           query,
           variables: {
-            title: 'Senior Rust Developer',
-            status: 'published',
-            salaryFrom: 2000,
-            salaryTo: 4000
+            title: title,
+            status: status,
+            salaryFrom: salary_from,
+            salaryTo: salary_to
           },
           context: {}
         )
+
         job_data = result.dig('data', 'createJob', 'job')
 
         expect(job_data).to be_nil
@@ -79,20 +87,22 @@ RSpec.describe Mutations::JobMutation, type: :graphql do # rubocop:disable Metri
     end
 
     context 'when user owns the job' do
+      let(:updated_title) { Faker::Job.title }
+      let(:status) { 'published' }
       it 'updates job successfully' do
         result = RailsExerciseSchema.execute(
           query,
           variables: {
             id: job.id,
-            title: 'Updated Title',
-            status: 'published'
+            title: updated_title,
+            status: status
           },
           context: { current_user: user }
         )
 
         job_data = result.dig('data', 'updateJob', 'job')
-        expect(job_data['title']).to eq('Updated Title')
-        expect(job_data['status']).to eq('published')
+        expect(job_data['title']).to eq(updated_title)
+        expect(job_data['status']).to eq(status)
       end
     end
 
