@@ -60,7 +60,7 @@ RSpec.describe Mutations::AuthenticationMutation, type: :graphql do # rubocop:di
           variables: {
             data: {
               fullName: 'David Jr',
-              email: 'davidjr@example.com',
+              email: Faker::Internet.email,
               password: '123456',
               passwordConfirmation: '654321'
             }
@@ -75,22 +75,21 @@ RSpec.describe Mutations::AuthenticationMutation, type: :graphql do # rubocop:di
     end
 
     context 'when email already exists' do
-      let!(:existing_user) { create(:user, email: 'existing@example.com') }
+      let!(:existing_user) { create(:user, email: Faker::Internet.email) }
 
       it 'returns email taken error' do
         result = RailsExerciseSchema.execute(
           query,
           variables: {
             data: {
-              fullName: 'Existing User',
-              email: 'existing@example.com',
+              fullName: Faker::Name.name,
+              email: existing_user.email,
               password: '123456',
               passwordConfirmation: '123456'
             }
           },
           context: {}
         )
-
         register_data = result.dig('data', 'register')
         expect(register_data['message']).to be_nil
         expect(register_data['errors']).to include('Email has already been taken')
@@ -133,8 +132,9 @@ RSpec.describe Mutations::AuthenticationMutation, type: :graphql do # rubocop:di
           variables: { email: 'test@example.com', password: 'wrongpass' },
           context: {}
         )
-        expect(result['data']['login']).to be_nil
-        expect(result['errors'].first['message']).to eq('Invalid email or password')
+        login_data = result.dig('data', 'login')
+        expect(login_data).to be_nil
+        expect(result['errors'].first['message']).to include('Invalid email or password')
       end
     end
   end

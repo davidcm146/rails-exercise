@@ -7,7 +7,7 @@ Rails.application.routes.draw do
     post 'login'
     delete 'logout'
   end
-  patch 'profile/:id', to: 'users#update'
+  patch 'profile', to: 'users#update'
   resources :jobs do
     collection do
       get 'share/:share_link', to: 'jobs#public_view'

@@ -40,24 +40,47 @@ RSpec.describe 'Auth API', type: :request do # rubocop:disable Metrics/BlockLeng
     end
   end
 
-  describe 'POST /login' do
-    let!(:user) { create(:user, email: 'john@example.com', password: 'password') }
+  describe 'POST /auth/login' do # rubocop:disable Metrics/BlockLength
+    let!(:user) { create(:user, email: Faker::Internet.unique.email, password: 'password') }
 
     context 'when credentials are valid' do
       it 'returns JWT token' do
-        post '/auth/login', params: { email: 'john@example.com', password: 'password' }.to_json, headers: headers
+        post '/auth/login',
+             params: { email: user.email, password: 'password' },
+             as: :json
 
         expect(response).to have_http_status(:ok)
-        expect(JSON.parse(response.body)).to have_key('token')
+
+        body = JSON.parse(response.body)
+        expect(body).to include('token')
       end
     end
 
     context 'when credentials are invalid' do
       it 'returns unauthorized' do
-        post '/auth/login', params: { email: 'john@example.com', password: 'wrong' }.to_json, headers: headers
+        post '/auth/login',
+             params: { email: user.email, password: 'wrong' },
+             as: :json
 
         expect(response).to have_http_status(:unauthorized)
-        expect(JSON.parse(response.body)['error']).to eq('Invalid email or password')
+
+        body = JSON.parse(response.body)
+        expect(body['errors']).to include('Invalid email or password')
+      end
+    end
+
+    context 'when params are missing' do
+      it 'returns 422 without body' do
+        post '/auth/login',
+             params: {},
+             as: :json
+
+        # debugger
+        expect(response).to have_http_status(:unprocessable_entity)
+        body = JSON.parse(response.body)
+        expect(body).to have_key('errors')
+        expect(body['errors']['email']).to include("Email can't be blank", 'Email is invalid')
+        expect(body['errors']['password']).to include("Password can't be blank")
       end
     end
   end

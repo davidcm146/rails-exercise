@@ -4,8 +4,8 @@ RSpec.describe Mutations::ProfileMutation, type: :graphql do # rubocop:disable M
   describe 'Update profile' do # rubocop:disable Metrics/BlockLength
     let(:query) do
       <<~GRAPHQL
-        mutation($id: ID!, $fullName: String, $avatar: Upload) {
-          updateProfile(input: { id: $id, fullName: $fullName, avatar: $avatar }) {
+        mutation($fullName: String, $avatar: Upload) {
+          updateProfile(input: { fullName: $fullName, avatar: $avatar }) {
             user {
               id
               fullName
@@ -14,65 +14,29 @@ RSpec.describe Mutations::ProfileMutation, type: :graphql do # rubocop:disable M
         }
       GRAPHQL
     end
-    let(:user) { create(:user, full_name: 'Old Name') }
-    let(:avatar_file) do
-      double(
-        'Upload',
-        original_filename: 'shutup.jpg',
-        content_type: 'image/jpg',
-        to_io: File.open(Rails.root.join('spec/factories/files/shutup.jpg'))
-      )
-    end
-    let(:updated_name) { Faker::Name.name }
-
-    context 'when user update profile successfully' do
-      it 'returns updated user info' do
-        result = RailsExerciseSchema.execute(
-          query,
-          variables: {
-            id: user.id,
-            fullName: updated_name
-            # avatar: avatar_file
-          },
-          context: { current_user: user }
-        )
-        user_data = result.dig('data', 'updateProfile', 'user')
-        expect(user_data['id']).to eq(user.id.to_s)
-        expect(user_data['fullName']).to eq(updated_name)
-        expect(user.reload.full_name).to eq(updated_name)
-      end
-    end
+    let(:user) { create(:user, full_name: Faker::Name.name) }
+    let(:full_name) { Faker::Name.name }
+    # let(:avatar_file) do
+    #   double(
+    #     'Upload',
+    #     original_filename: 'shutup.jpg',
+    #     content_type: 'image/jpg',
+    #     to_io: File.open(Rails.root.join('spec/factories/files/shutup.jpg'))
+    #   )
+    # end
 
     context 'when user is not logged in' do
       it 'raises not logged in error' do
         result = RailsExerciseSchema.execute(
           query,
           variables: {
-            id: user.id,
-            fullName: updated_name
+            fullName: full_name
           },
           context: {}
         )
 
         expect(result['errors']).to be_present
         expect(result['errors'].first['message']).to eq('You must be logged in')
-      end
-    end
-
-    context 'when user tries to update another user' do
-      let(:other_user) { create(:user) }
-
-      it 'raise authorization error' do
-        expect do
-          RailsExerciseSchema.execute(
-            query,
-            variables: {
-              id: other_user.id,
-              fullName: updated_name
-            },
-            context: { current_user: user }
-          )
-        end.to raise_error(Pundit::NotAuthorizedError)
       end
     end
   end

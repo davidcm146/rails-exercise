@@ -1,31 +1,19 @@
 module Mutations
   class JobMutation
     class CreateJob < BaseMutation
-      argument :title, String, required: true
-      argument :published_date, GraphQL::Types::ISO8601Date, required: false
-      argument :salary_from, Integer, required: false
-      argument :salary_to, Integer, required: false
-      argument :status, String, required: true
-      argument :share_link, String, required: false
+      argument :data, Types::JobInputType
 
       field :job, Types::JobType, null: true
       field :errors, [String], null: false
 
-      def resolve(title:, status:, published_date: nil, salary_from: nil, salary_to: nil, share_link: nil) # rubocop:disable Metrics/ParameterLists
+      def resolve(data:)
         authorize_user!
-        job = current_user.jobs.build(
-          title: title,
-          published_date: published_date,
-          salary_from: salary_from,
-          salary_to: salary_to,
-          status: status,
-          share_link: share_link
-        )
-        authorize job, :create?
-        if job.save
-          { job: job, errors: [] }
+        authorize Job, :create?
+        result = Jobs::JobService::CreateService.new(current_user: context[:current_user], params: data.to_h).call
+        if result.success?
+          { job: result.data, errors: [] }
         else
-          { job: nil, errors: job.errors.full_messages }
+          { job: nil, errors: result.errors.full_messages }
         end
       end
     end
@@ -51,8 +39,7 @@ module Mutations
       argument :published_date, GraphQL::Types::ISO8601Date, required: false
       argument :salary_from, Integer, required: false
       argument :salary_to, Integer, required: false
-      argument :status, String, required: false
-      argument :share_link, String, required: false
+      argument :status, Integer, required: false
 
       field :job, Types::JobType, null: true
       field :errors, [String], null: false
@@ -61,10 +48,11 @@ module Mutations
         authorize_user!
         job = Job.find(id)
         authorize job, :update?
-        if job.update(attrs)
-          { job: job, errors: [] }
+        result = Jobs::JobService::UpdateService.new(job: job, params: attrs).call
+        if result.success?
+          { job: result.data, errors: [] }
         else
-          { job: nil, errors: job.errors.full_messages }
+          { job: nil, errors: result.errors.full_messages }
         end
       end
     end

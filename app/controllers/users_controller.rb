@@ -4,11 +4,16 @@ class UsersController < ApplicationController
   def update
     user = User.find(@current_user.id)
     authorize user
+
     attach_avatar(user)
-    if user.update(full_name: user_params[:full_name])
-      render json: { message: 'User updated successfully!', user: UserSerializer.new(user) }, status: :ok
+    result = Users::UserService::UpdateProfileService.new(current_user: @current_user, params: user_params).call
+    if result.success?
+      render json: {
+        message: 'User updated successfully!',
+        user: UserSerializer.new(result.data)
+      }, status: :ok
     else
-      render json: { errors: user.errors.full_messages }, status: :unprocessable_entity
+      render json: { errors: result.errors }, status: :unprocessable_entity
     end
   end
 
@@ -21,6 +26,6 @@ class UsersController < ApplicationController
   end
 
   def user_params
-    params.permit(:full_name, :avatar)
+    params.require(:user).permit(:full_name, :avatar)
   end
 end

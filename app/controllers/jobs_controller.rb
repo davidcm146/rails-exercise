@@ -18,19 +18,25 @@ class JobsController < ApplicationController
   end
 
   def create
-    job = @current_user.jobs.build(job_params)
-    if job.save
-      render json: { message: 'Job created successfully!', job: job }, status: :created
+    result = Jobs::JobService::CreateService.new(current_user: @current_user, params: job_params).call
+    # debugger
+    if result.success?
+      render json: { message: 'Job created successfully!', job: result.data }, status: :created
     else
-      render json: { errors: job.errors.full_messages }, status: :unprocessable_entity
+      render json: { errors: result.errors }, status: :unprocessable_entity
     end
   end
 
   def update
     job = Job.find(params[:id])
     authorize job
-    job.update!(job_params)
-    render json: { job: job, message: 'Job updated successfully!' }, status: :ok
+
+    result = Jobs::JobService::UpdateService.new(job: job, params: job_params).call
+    if result.success?
+      render json: { job: result.data, message: 'Job updated successfully!' }, status: :ok
+    else
+      render json: { errors: result.errors }, status: :unprocessable_entity
+    end
   end
 
   def destroy
@@ -43,6 +49,6 @@ class JobsController < ApplicationController
   private
 
   def job_params
-    params.permit(:title, :published_date, :created_by_id, :salary_from, :salary_to, :status, :share_link)
+    params.require(:job).permit(:title, :published_date, :salary_from, :salary_to, :status, :share_link)
   end
 end
