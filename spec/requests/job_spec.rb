@@ -32,36 +32,68 @@ RSpec.describe 'Job API', type: :request do # rubocop:disable Metrics/BlockLengt
     end
   end
 
-  describe 'POST /jobs' do
+  describe 'POST /jobs' do # rubocop:disable Metrics/BlockLength
     let(:valid_params) do
-      { title: 'New Job', salary_from: 1000, salary_to: 2000 }
+      {
+        job: {
+          title: Faker::Job.title,
+          salary_from: 1000,
+          salary_to: 2000,
+          status: Job.statuses.values.sample
+        }
+      }
     end
 
     context 'with valid params' do
-      it 'returns created job successfully' do
-        expect do
-          post '/jobs', params: valid_params, headers: headers
-        end.to change(Job, :count).by(1)
+      it 'creates a job and returns created status' do
+        post '/jobs', params: valid_params, headers: headers
+
         expect(response).to have_http_status(:created)
+        body = JSON.parse(response.body)
+
+        expect(body['message']).to eq('Job created successfully!')
+        expect(body['job']).to be_present
+        expect(body['job']['title']).to eq(valid_params[:job][:title])
       end
     end
 
-    context 'with invalid params' do
+    context 'when invalid params' do
       it 'returns errors' do
-        post '/jobs', params: { title: '' }, headers: headers
+        post '/jobs', params: { job: { title: '' } }, headers: headers
+
         expect(response).to have_http_status(:unprocessable_entity)
+        body = JSON.parse(response.body)
+
+        expect(body['errors']).to be_present
+      end
+    end
+
+    context 'when salary_from > salary_to' do
+      it 'returns validation error about salary range' do
+        post '/jobs',
+             params: { job: { title: Faker::Job.title, salary_from: 3000, salary_to: 2000,
+                              status: Job.statuses.values.sample } },
+             headers: headers
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        body = JSON.parse(response.body)
+
+        expect(body['errors']['base']).to include('Salary from cannot be greater than salary to')
       end
     end
   end
 
   describe 'PATCH /jobs/:id' do
-    let(:update_params) { { title: 'Updated title' } }
+    let(:update_params) do
+      { job: { title: Faker::Job.title, salary_from: 1000, salary_to: 2000, status: Job.statuses.values.sample } }
+    end
 
     context 'when authorized' do
       it 'updates the job' do
         patch "/jobs/#{job.id}", params: update_params, headers: headers
+
         expect(response).to have_http_status(:ok)
-        expect(job.reload.title).to eq('Updated title')
+        expect(job.reload.title).to eq(update_params[:job][:title])
       end
     end
 

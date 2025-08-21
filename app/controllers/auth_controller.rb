@@ -4,23 +4,27 @@ class AuthController < ApplicationController
   skip_before_action :authorize_request, only: %i[register login]
 
   def register
-    @user = User.new(user_params)
-    if @user.save
+    result = Authentication::AuthenticationService::RegisterService.new(user_params).call
+    if result.success?
       render json: { message: 'Register succesfully' }, status: :created
     else
-      render json: { errors: @user.errors.full_messages }, status: :unprocessable_entity
+      render json: { errors: result.errors }, status: :unprocessable_entity
     end
   end
 
   def login
-    @user = User.find_by(email: params[:email])
+    result = Authentication::AuthenticationService::LoginService.new(user_params).call
 
-    if @user&.authenticate(params[:password])
-      token = JsonWebToken.encode(user_id: @user.id)
-      Rails.logger.debug token: token
-      render json: { token: token }, status: :ok
+    if result.success?
+      render json: { token: result.data }, status: :ok
     else
-      render json: { error: 'Invalid email or password' }, status: :unauthorized
+      errors = result.errors
+
+      if errors[:base].present?
+        render json: { errors: errors[:base] }, status: :unauthorized
+      else
+        render json: { errors: errors.to_hash(true) }, status: :unprocessable_entity
+      end
     end
   end
 

@@ -6,8 +6,8 @@ RSpec.describe Mutations::JobMutation, type: :graphql do # rubocop:disable Metri
   describe 'CreateJob' do # rubocop:disable Metrics/BlockLength
     let(:query) do
       <<~GRAPHQL
-        mutation($title: String!, $status: String!, $salaryFrom: Int, $salaryTo: Int) {
-          createJob(input: { title: $title, status: $status, salaryFrom: $salaryFrom, salaryTo: $salaryTo }) {
+        mutation($data: JobInput!) {
+          createJob(input: { data: $data }) {
             job {
               title
               status
@@ -19,26 +19,28 @@ RSpec.describe Mutations::JobMutation, type: :graphql do # rubocop:disable Metri
         }
       GRAPHQL
     end
-    let(:user) { create(:user) }
     context 'when user logged in' do
       it 'returns created job' do
         result = RailsExerciseSchema.execute(
           query,
           variables: {
-            title: 'Senior Rust Developer',
-            status: 'published',
-            salaryFrom: 2000,
-            salaryTo: 4000
+            data: {
+              title: job.title,
+              status: job.status_before_type_cast,
+              salaryFrom: job.salary_from,
+              salaryTo: job.salary_to
+            }
           },
           context: { current_user: user }
         )
         job_data = result.dig('data', 'createJob', 'job')
+        # debugger
         errors_data = result.dig('data', 'createJob', 'errors')
 
-        expect(job_data['title']).to eq('Senior Rust Developer')
-        expect(job_data['status']).to eq('published')
-        expect(job_data['salaryFrom']).to eq(2000)
-        expect(job_data['salaryTo']).to eq(4000)
+        expect(job_data['title']).to eq(job.title)
+        expect(job_data['status']).to eq(job.status)
+        expect(job_data['salaryFrom']).to eq(job.salary_from)
+        expect(job_data['salaryTo']).to eq(job.salary_to)
         expect(errors_data).to be_empty
       end
     end
@@ -48,10 +50,12 @@ RSpec.describe Mutations::JobMutation, type: :graphql do # rubocop:disable Metri
         result = RailsExerciseSchema.execute(
           query,
           variables: {
-            title: 'Senior Rust Developer',
-            status: 'published',
-            salaryFrom: 2000,
-            salaryTo: 4000
+            data: {
+              title: job.title,
+              status: job.status_before_type_cast,
+              salaryFrom: job.salary_from,
+              salaryTo: job.salary_to
+            }
           },
           context: {}
         )
@@ -66,7 +70,7 @@ RSpec.describe Mutations::JobMutation, type: :graphql do # rubocop:disable Metri
   describe 'UpdateJob' do # rubocop:disable Metrics/BlockLength
     let(:query) do
       <<~GRAPHQL
-        mutation($id: ID!, $title: String, $status: String) {
+        mutation($id: ID!, $title: String, $status: Int) {
           updateJob(input: { id: $id, title: $title, status: $status }) {
             job {
               title
@@ -79,19 +83,24 @@ RSpec.describe Mutations::JobMutation, type: :graphql do # rubocop:disable Metri
     end
 
     context 'when user owns the job' do
+      let(:updated_title) { Faker::Job.title }
+      let(:salary_from) { Random.rand(1000..2000) }
+      let(:salary_to) { Random.rand(2000..3000) }
       it 'updates job successfully' do
         result = RailsExerciseSchema.execute(
           query,
           variables: {
             id: job.id,
-            title: 'Updated Title',
-            status: 'published'
+            title: updated_title,
+            status: 1,
+            salaryFrom: salary_from,
+            salaryTo: salary_to
           },
           context: { current_user: user }
         )
 
         job_data = result.dig('data', 'updateJob', 'job')
-        expect(job_data['title']).to eq('Updated Title')
+        expect(job_data['title']).to eq(updated_title)
         expect(job_data['status']).to eq('published')
       end
     end
@@ -105,7 +114,7 @@ RSpec.describe Mutations::JobMutation, type: :graphql do # rubocop:disable Metri
             query,
             variables: {
               id: other_job.id,
-              title: 'Updated Title'
+              title: Faker::Job.title
             },
             context: { current_user: user }
           )

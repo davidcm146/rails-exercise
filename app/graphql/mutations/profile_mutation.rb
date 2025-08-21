@@ -1,22 +1,26 @@
 module Mutations
   class ProfileMutation
     class UpdateProfile < BaseMutation
-      argument :id, ID, required: true
       argument :avatar, ApolloUploadServer::Upload, required: false
       argument :full_name, String, required: false
 
       field :user, Types::UserType
 
-      def resolve(id:, full_name: nil, avatar: nil)
+      def resolve(full_name: nil, avatar: nil)
         authorize_user!
-        user = User.find(id)
-        authorize user, :update?
+        authorize context[:current_user], :update?
 
-        user.full_name = full_name if full_name.present?
-        user.avatar.attach(io: avatar, filename: avatar.original_filename) if avatar.present?
+        result = Users::UserService::UpdateProfileService.new(
+          current_user: context[:current_user],
+          params: {
+            full_name: full_name,
+            avatar: avatar
+          }
+        ).call
 
-        user.save!
-        { user: user }
+        raise GraphQL::ExecutionError, result.errors.full_messages unless result.success?
+
+        { user: result.data }
       end
     end
   end

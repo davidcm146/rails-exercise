@@ -7,11 +7,10 @@ module Mutations
       field :token, String, null: true
       field :errors, [String], null: true
       def resolve(email:, password:)
-        user = User.find_by(email: email)
-        raise GraphQL::ExecutionError, 'Invalid email or password' unless user&.authenticate(password)
+        result = Authentication::AuthenticationService::LoginService.new(email: email, password: password).call
+        raise GraphQL::ExecutionError, result.errors.full_messages unless result.success?
 
-        token = JsonWebToken.encode(user_id: user.id)
-        { token: token, errors: [] }
+        { token: result.data, errors: [] }
       end
     end
 
@@ -22,17 +21,12 @@ module Mutations
       field :errors, [String], null: true
 
       def resolve(data:)
-        user = User.new(
-          full_name: data[:full_name],
-          email: data[:email],
-          password: data[:password],
-          password_confirmation: data[:password_confirmation]
-        )
+        result = Authentication::AuthenticationService::RegisterService.new(data.to_h).call
 
-        if user.save
+        if result.success?
           { message: 'Register successfully', errors: [] }
         else
-          { message: nil, errors: user.errors.full_messages }
+          { message: nil, errors: result.errors.full_messages }
         end
       end
     end
