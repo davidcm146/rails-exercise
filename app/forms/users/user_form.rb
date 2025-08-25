@@ -6,17 +6,18 @@ module Users
     attribute :full_name, :string
     attribute :avatar
 
-    attr_reader :user
+    attr_reader :params, :user
 
     validates :full_name, presence: true
 
     def initialize(user, params = {})
       @user = user
-      super(params)
+      @params = params
+      # super(params) automatically called by ActiveModel::Attributes and assigns attributes variable
     end
 
     def user_attributes
-      attributes.except(:avatar).compact_blank
+      @params.except(:avatar).compact_blank
     end
 
     def save

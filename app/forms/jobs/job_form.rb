@@ -18,7 +18,8 @@ module Jobs
 
     def initialize(job = nil, params = {})
       @job = job || Job.new
-      super(params)
+      @params = params
+      # super(params) automatically called by ActiveModel::Attributes and assigns attributes variable
     end
 
     def save
@@ -32,9 +33,9 @@ module Jobs
 
     def job_attributes
       if @created_by.present?
-        attributes.compact_blank.merge(created_by: @created_by)
+        @params.compact_blank.merge(created_by: @created_by)
       else
-        attributes.compact_blank
+        @params.compact_blank
       end
     end
 
